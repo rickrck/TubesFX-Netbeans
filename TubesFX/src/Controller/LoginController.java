@@ -28,11 +28,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-/**
- * FXML Controller class
- *
- * @author ricky
- */
 public class LoginController extends AppConstruct implements Initializable {
 
     @FXML
@@ -48,8 +43,6 @@ public class LoginController extends AppConstruct implements Initializable {
     private Connection conn;
     private PreparedStatement pr;
     private ResultSet rs;
-    
-    private Alert alert;
 
     /**
      * Initializes the controller class.
@@ -62,25 +55,21 @@ public class LoginController extends AppConstruct implements Initializable {
 
     @FXML
     private void SignInClicked(ActionEvent event) throws SQLException {
-        String selectData = "SELECT * FROM user WHERE username = '" 
-                + tf_username.getText() + "'and password = '" + tf_password.getText() + "'";
+        String selectData = "SELECT * FROM user WHERE LOWER(username) = LOWER('" 
+                + tf_username.getText() + "') and password = '" + tf_password.getText() + "'";
         
         conn = database.getConnection();
         
         try{
             if (tf_username.getText().isEmpty() || tf_password.getText().isEmpty()){
-                alert = new Alert(AlertType.ERROR, "Username atau Password kosong");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                alert.showAndWait();
+                showAlert(AlertType.ERROR, "Username atau Password kosong");
             } else {
                 pr = conn.prepareStatement(selectData);
                 rs = pr.executeQuery();
                 
                 if(rs.next()){
                     
-                    User user = new User(rs.getString("nama"), rs.getString("username"), rs.getString("password"), rs.getString("status"));
+                    User user = new User(rs.getString("nama"), rs.getString("username"), rs.getString("password"), rs.getString("status")) {};
                     if ("REGULER".equals(User.getStatus())){
                         user = new UserReguler(rs.getString("nama"), rs.getString("username"), rs.getString("password"), rs.getString("status"));
                         System.out.println("User Reguler");
@@ -89,12 +78,7 @@ public class LoginController extends AppConstruct implements Initializable {
                         System.out.println("User Premium");
                     }
                     
-                    alert = new Alert(AlertType.INFORMATION, "Login berhasil, mentang-mentang punya akun");
-                    alert.setTitle("My Task Confirmation");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    alert.showAndWait();
+                    showAlert(AlertType.INFORMATION, "Login berhasil");
                     
                     Parent root = FXMLLoader.load(getClass().getResource("/View/Dashboard.fxml"));
                     stage = new Stage();
@@ -107,19 +91,15 @@ public class LoginController extends AppConstruct implements Initializable {
                     
                     
                 } else {
-                    alert = new Alert(AlertType.INFORMATION, "Username atau Password salah");
-                    alert.setTitle("My Task Confirmation");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    stage.setResizable(false);
-                    alert.showAndWait();
+                    showAlert(AlertType.INFORMATION, "Username atau Password salah");
                 }
             }
         } catch (SQLException e){
-            e.getMessage();
+            showAlert(Alert.AlertType.ERROR, e.getMessage());
+            e.printStackTrace();
         } catch (IOException ex) {
-            Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
+            showAlert(Alert.AlertType.ERROR, ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
@@ -129,7 +109,7 @@ public class LoginController extends AppConstruct implements Initializable {
         Stage stage = new Stage();
         stage.setScene(new Scene(root));
         stage.show();
-        stage.setTitle("MyTask");
+        stage.setTitle("My Task : Register");
         stage.getIcons().add(new Image("Resource/icon.jpeg"));
         stage.setResizable(false);
         btnSignIn.getScene().getWindow().hide();

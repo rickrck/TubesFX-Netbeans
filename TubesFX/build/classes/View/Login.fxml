@@ -17,12 +17,12 @@
                <children>
                   <TextField fx:id="tf_username" layoutX="407.0" layoutY="265.0" promptText="Username" />
                   <PasswordField fx:id="tf_password" layoutX="407.0" layoutY="319.0" promptText="Password" />
-                  <Label contentDisplay="CENTER" layoutX="448.0" layoutY="136.0" text="Sign In" textAlignment="CENTER">
+                  <Label contentDisplay="CENTER" layoutX="459.0" layoutY="136.0" text="Login" textAlignment="CENTER">
                      <font>
                         <Font name="System Bold" size="32.0" />
                      </font>
                   </Label>
-                  <Button fx:id="btnSignIn" layoutX="468.0" layoutY="386.0" mnemonicParsing="false" onAction="#SignInClicked" text="Sign In" />
+                  <Button fx:id="btnSignIn" layoutX="468.0" layoutY="386.0" mnemonicParsing="false" onAction="#SignInClicked" style="-fx-background-color: #0a062b; -fx-font-color: #fff;" text="Sign In" textFill="WHITE" />
                   <Label layoutX="379.0" layoutY="459.0" text="Don't have an account?" />
                   <Hyperlink fx:id="hl_register" layoutX="531.0" layoutY="455.0" onAction="#switchRegister" text="Create an account" />
                </children>

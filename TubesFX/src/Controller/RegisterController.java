@@ -30,11 +30,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
-/**
- * FXML Controller class
- *
- * @author ricky
- */
 public class RegisterController extends AppConstruct implements Initializable {
 
     @FXML
@@ -75,12 +70,7 @@ public class RegisterController extends AppConstruct implements Initializable {
         
         try {
             if(tf_name.getText().isEmpty() || tf_username.getText().isEmpty() || tf_password.getText().isEmpty()){
-                alert = new Alert(AlertType.INFORMATION, "ERROR : JANGAN MAGER NGISI");
-                alert.setTitle("My Task ERROR");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                alert.showAndWait();
+                showAlert(AlertType.INFORMATION, "Isi data yang kosong");
             } else {
                 String checkUsername = "SELECT username FROM user WHERE username = '"
                         + tf_username.getText() + "'";
@@ -88,20 +78,10 @@ public class RegisterController extends AppConstruct implements Initializable {
                 rs = pr.executeQuery();
                 
                 if(rs.next()) {
-                    alert = new Alert(AlertType.INFORMATION, tf_username.getText() + " udah ada, SORRY YE");
-                    alert.setTitle("My Task ERROR");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    alert.showAndWait();
+                    showAlert(AlertType.INFORMATION, "Akun dengan username " + tf_username.getText() + " sudah dipakai");
                 } else {
                     if (tf_password.getText().length() < 8) {
-                        alert = new Alert(AlertType.INFORMATION, "Password minimal 8 karakter bang");
-                        alert.setTitle("My Task ERROR");
-                        alert.setHeaderText(null);
-                        stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                        alert.showAndWait();
+                        showAlert(AlertType.ERROR, "Password minimal 8 karakter");
                     } else {
                         pr = conn.prepareStatement(insertData);
                         pr.setString(1, tf_name.getText());
@@ -110,12 +90,7 @@ public class RegisterController extends AppConstruct implements Initializable {
                         pr.setString(4, Status.REGULER.toString());
                         pr.executeUpdate();     
                         
-                        alert = new Alert(AlertType.INFORMATION, "Akun berhasil dibuat");
-                        alert.setTitle("My Task Confirmation");
-                        alert.setHeaderText(null);
-                        stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                        alert.showAndWait();
+                        showAlert(AlertType.INFORMATION, "Akun berhasil dibuat");
                         
                         Parent root = FXMLLoader.load(getClass().getResource("/View/Login.fxml"));
                         Stage stage = new Stage();
@@ -129,6 +104,7 @@ public class RegisterController extends AppConstruct implements Initializable {
                 }
             }
         } catch (SQLException e){
+            showAlert(Alert.AlertType.ERROR, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -139,7 +115,7 @@ public class RegisterController extends AppConstruct implements Initializable {
         Stage stage = new Stage();
         stage.setScene(new Scene(root));
         stage.show();
-        stage.setTitle("MyTask");
+        stage.setTitle("My Task : Login");
         stage.getIcons().add(new Image("Resource/icon.jpeg"));
         stage.setResizable(false);
         btnSignUp.getScene().getWindow().hide();

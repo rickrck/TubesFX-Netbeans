@@ -5,10 +5,6 @@
  */
 package Model;
 
-/**
- *
- * @author ricky
- */
 public class UserReguler extends User implements maxTask{
     
     public UserReguler(String nama, String username, String password, String status){

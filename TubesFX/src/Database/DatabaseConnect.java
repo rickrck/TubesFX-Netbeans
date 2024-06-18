@@ -8,12 +8,7 @@ package Database;
 
 
 import java.sql.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-/**
- *
- * @author ricky
- */
+
 public class DatabaseConnect {
     public Connection conn;
     static final String DB_NAME = "mytask";

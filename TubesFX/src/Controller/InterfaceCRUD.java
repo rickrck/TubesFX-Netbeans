@@ -7,10 +7,6 @@ package Controller;
 
 import javafx.event.ActionEvent;
 
-/**
- *
- * @author ricky
- */
 public abstract interface InterfaceCRUD {
     public abstract void addTask(ActionEvent event);
     public abstract void deleteTask(ActionEvent event);

@@ -34,7 +34,7 @@ public class Main extends Application {
         Scene scene = new Scene(root);
         
         primaryStage.setScene(scene);
-        primaryStage.setTitle("My Task");
+        primaryStage.setTitle("My Task : Login");
         primaryStage.getIcons().add(new Image("Resource/icon.jpeg"));
         primaryStage.setResizable(false);
         primaryStage.show();

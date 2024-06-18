@@ -9,8 +9,10 @@ import Database.DatabaseConnect;
 import Model.*;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DataTruncation;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
@@ -41,19 +43,12 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
-/**
- * FXML Controller class
- *
- * @author ricky
- */
 public class DashboardController extends AppConstruct implements Initializable, InterfaceCRUD {
 
     @FXML
     private Button btnHome;
     @FXML
     private Button btnTask;
-    @FXML
-    private Button btn_Overview;
     @FXML
     private AnchorPane Home_form;
     @FXML
@@ -132,30 +127,30 @@ public class DashboardController extends AppConstruct implements Initializable, 
         hasilStatus.setText(User.getStatus());
     }
     
-    public ObservableList<Task> TaskList(){
+    public ObservableList<Task> TaskList() {
         ObservableList<Task> listTask = FXCollections.observableArrayList();
-        
-        String selectData = "SELECT * FROM task WHERE user = '" + 
-                User.getUsername() + "'";
-        
+
+        String selectData = "SELECT * FROM task WHERE user = ? AND is_deleted = FALSE";
+
         conn = database.getConnection();
-        
-        try{
+
+        try {
             pr = conn.prepareStatement(selectData);
+            pr.setString(1, User.getUsername());
             rs = pr.executeQuery();
-            
+
             Task task;
-            while(rs.next()){
+            while (rs.next()) {
                 task = new Task(rs.getInt("ID"),
-                        rs.getString("judul"),
-                        rs.getString("deskripsi"),
-                        rs.getDate("startDate"),
-                        rs.getDate("endDate"),
-                        rs.getString("jenisTask"),
-                        rs.getString("status"),
-                        rs.getString("user")
+                                rs.getString("judul"),
+                                rs.getString("deskripsi"),
+                                rs.getDate("startDate"),
+                                rs.getDate("endDate"),
+                                rs.getString("jenisTask"),
+                                rs.getString("status"),
+                                rs.getString("user")
                 );
-                
+
                 listTask.add(task);
             }
         } catch (SQLException ex) {
@@ -183,8 +178,8 @@ public class DashboardController extends AppConstruct implements Initializable, 
         
         Task task = Task_tableView.getSelectionModel().getSelectedItem();
         int num = Task_tableView.getSelectionModel().getSelectedIndex();
-        TaskID = task.getID();
         
+        TaskID = task.getID();
         Task_judul.setText(task.getJudul());
         Task_desc.setText(task.getDesc());
         Task_startDate.setValue(LocalDate.parse(String.valueOf(task.getStartDate())));
@@ -212,20 +207,10 @@ public class DashboardController extends AppConstruct implements Initializable, 
         try{
             if(Task_judul.getText().isEmpty() || Task_startDate.getValue() == null ||
                 Task_endDate.getValue() == null || Task_jenisTask.getValue() == null){
-                alert = new Alert(Alert.AlertType.ERROR, "Jangan ada yang kosong dong");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : ERROR");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.INFORMATION, "Tolong isi semua data yang dibutuhkan");
             } else {
                 if(Task_endDate.getValue().isBefore(Task_startDate.getValue())){
-                    alert = new Alert(Alert.AlertType.ERROR, "Liat tanggalnya");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    stage.setTitle("My Task : ERROR");
-                    alert.showAndWait();
+                    showAlert(Alert.AlertType.ERROR, "Tanggal mulai melebihi tanggal selesai");
                 } else {
                     String checkPlan = "SELECT  judul FROM task WHERE judul = '" +
                             Task_judul.getText() + "'";
@@ -235,20 +220,10 @@ public class DashboardController extends AppConstruct implements Initializable, 
                     
                     if("REGULER".equals(User.getStatus())){
                         if(TaskList().size() > UserReguler.maxTask){
-                            alert = new Alert(Alert.AlertType.ERROR, "User REGULER cuma bisa 10 Task");
-                            alert.setHeaderText(null);
-                            stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                            stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                            stage.setTitle("My Task : ERROR");
-                            alert.showAndWait();
+                            showAlert(Alert.AlertType.ERROR, "User REGULER hanya bisa memiliki maksimal 10 Task");
                         } else {
                             if (rs.next()){
-                                alert = new Alert(Alert.AlertType.ERROR, Task_judul.getText() + " kan udah ada banh");
-                                alert.setHeaderText(null);
-                                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                                stage.setTitle("My Task : ERROR");
-                                alert.showAndWait();
+                                showAlert(Alert.AlertType.ERROR, "Judul task : " + Task_judul.getText() + " sudah ada");
                             } else {
                                 String insertData = "INSERT INTO task (judul, deskripsi, startDate, endDate, jenisTask, status, user) VALUES (?,?,?,?,?,?,?)";
                     
@@ -263,22 +238,12 @@ public class DashboardController extends AppConstruct implements Initializable, 
 
                                 pr.executeUpdate();
 
-                                alert = new Alert(Alert.AlertType.INFORMATION, "yahaha nambah tugas");
-                                alert.setHeaderText(null);
-                                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                                stage.setTitle("My Task : Success");
-                                alert.showAndWait();
+                                showAlert(Alert.AlertType.INFORMATION, "Task berhasil ditambahkan ke table MyTask");
                             }
                         }
                     } else {
                         if (rs.next()){
-                            alert = new Alert(Alert.AlertType.ERROR, Task_judul.getText() + " kan udah ada banh");
-                            alert.setHeaderText(null);
-                            stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                            stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                            stage.setTitle("My Task : ERROR");
-                            alert.showAndWait();
+                            showAlert(Alert.AlertType.ERROR, "Judul task : " + Task_judul.getText() + " sudah ada");
                         } else {
                             String insertData = "INSERT INTO task (judul, deskripsi, startDate, endDate, jenisTask, status, user) VALUES (?,?,?,?,?,?,?)";
 
@@ -293,12 +258,7 @@ public class DashboardController extends AppConstruct implements Initializable, 
 
                             pr.executeUpdate();
 
-                            alert = new Alert(Alert.AlertType.INFORMATION, "yahaha nambah tugas");
-                            alert.setHeaderText(null);
-                            stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                            stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                            stage.setTitle("My Task : Success");
-                            alert.showAndWait();
+                            showAlert(Alert.AlertType.INFORMATION, "Task berhasil ditambahkan ke table MyTask");
                         }
                     }
                     Task_judul.setText("");
@@ -309,12 +269,16 @@ public class DashboardController extends AppConstruct implements Initializable, 
                     showTask();
                 }
             }
-        } catch (SQLException ex) {            
-            ex.printStackTrace();
+        } catch (SQLException ex) { 
+            if (ex instanceof SQLDataException) {
+            alert = new Alert(Alert.AlertType.ERROR, "Data terlalu panjang atau tidak sesuai format yang diharapkan");
+        } else {
+            alert = new Alert(Alert.AlertType.ERROR, "Terjadi kesalahan saat mengakses database");
+        }
+        ex.printStackTrace();
         }
     }
-
-
+    
     @Override
     @FXML
     public void deleteTask(ActionEvent event) {
@@ -323,38 +287,24 @@ public class DashboardController extends AppConstruct implements Initializable, 
         try {
 
             if (TaskID == 0) {
-                alert = new Alert(Alert.AlertType.ERROR, "Pilih tugas dulu");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : ERROR");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.ERROR, "Pilih tugas yang ingin dihapus terlebih dahulu");
             } else {
-                alert = new Alert(Alert.AlertType.CONFIRMATION, "Jadi hapus " + Task_judul.getText() + "?");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : Confirmation");
-                Optional<ButtonType> option = alert.showAndWait();
-
-                if (option.get().equals(ButtonType.OK)) {
+                if (showConfirmationAlert("Jadi hapus " + Task_judul.getText() + "?")) {
                     String checkData = "SELECT * FROM task WHERE id = " + TaskID;
 
                     st = conn.createStatement();
                     rs = st.executeQuery(checkData);
                     if (rs.next()) {
 
-                        String deleteData = "DELETE FROM task WHERE id = " + TaskID;
+                        //String deleteData = "DELETE FROM task WHERE id = " + TaskID;
 
-                        pr = conn.prepareStatement(deleteData);
+                        String softDeleteData = "UPDATE task SET is_deleted = TRUE WHERE id = " + TaskID;
+                        
+//                        pr = conn.prepareStatement(deleteData);
+                        pr = conn.prepareStatement(softDeleteData);
                         pr.executeUpdate();
 
-                        alert = new Alert(Alert.AlertType.INFORMATION, "Berhasil dihapus");
-                        alert.setHeaderText(null);
-                        stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                        stage.setTitle("My Task : Success");
-                        alert.showAndWait();
+                        showAlert(Alert.AlertType.INFORMATION, "Task : " + Task_judul.getText() + " berhasil dihapus");
 
                         Task_judul.setText("");
                         Task_desc.setText("");
@@ -364,17 +314,13 @@ public class DashboardController extends AppConstruct implements Initializable, 
                         showTask();
                     }
                 } else {
-                    alert = new Alert(Alert.AlertType.INFORMATION, "Oke ga jadi hapus");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    stage.setTitle("My Task : INFORMATION");
-                    alert.showAndWait();
+                    showAlert(Alert.AlertType.INFORMATION, "Task : " + Task_judul.getText() + " TIDAK jadi dihapus");
                 }
             
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DashboardController.class.getName()).log(Level.SEVERE, null, ex);
+            showAlert(Alert.AlertType.ERROR, ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
@@ -386,21 +332,9 @@ public class DashboardController extends AppConstruct implements Initializable, 
         try {
 
             if (TaskID == 0) {
-                alert = new Alert(Alert.AlertType.ERROR, "Pilih tugas dulu");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : ERROR");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.ERROR, "Pilih tugas yang ingin diupdate terlebih dahulu");
             } else {
-                alert = new Alert(Alert.AlertType.CONFIRMATION, "Jadi update " + Task_judul.getText() + "?");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : Confirmation");
-                Optional<ButtonType> option = alert.showAndWait();
-
-                if (option.get().equals(ButtonType.OK)) {
+                if (showConfirmationAlert("Jadi update " + Task_judul.getText() + "?")) {
                     String checkData = "SELECT * FROM task WHERE id = " + TaskID;
 
                     st = conn.createStatement();
@@ -417,12 +351,7 @@ public class DashboardController extends AppConstruct implements Initializable, 
                         pr = conn.prepareStatement(updateData);
                         pr.executeUpdate();
 
-                        alert = new Alert(Alert.AlertType.INFORMATION, "Berhasil diupdate");
-                        alert.setHeaderText(null);
-                        stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                        stage.setTitle("My Task : Success");
-                        alert.showAndWait();
+                        showAlert(Alert.AlertType.INFORMATION, "Task : " + Task_judul.getText() + " berhasil diupdate");
 
                         Task_judul.setText("");
                         Task_desc.setText("");
@@ -433,16 +362,12 @@ public class DashboardController extends AppConstruct implements Initializable, 
 
                     }
                 } else {
-                    alert = new Alert(Alert.AlertType.INFORMATION, "Oke ga jadi update");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    stage.setTitle("My Task : INFORMATION");
-                    alert.showAndWait();
+                    showAlert(Alert.AlertType.INFORMATION, "Task : " + Task_judul.getText() + " tidak jadi diupdate");
                 }
             }
 
         } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, e.getMessage());
             e.printStackTrace();
         }
 
@@ -451,27 +376,18 @@ public class DashboardController extends AppConstruct implements Initializable, 
     @FXML
     private void logout(ActionEvent event) {
         try {
-
-            alert = new Alert(Alert.AlertType.CONFIRMATION, "Mau logout kah?");
-            alert.setHeaderText(null);
-            alert.setTitle("My Task : Log Out");
-            stage = (Stage) alert.getDialogPane().getScene().getWindow();
-            stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-            
-            Optional<ButtonType> option = alert.showAndWait();
-
-            if (option.get().equals(ButtonType.OK)) {
+            if (showConfirmationAlert("Anda ingin loogout dari akun?")) {
                 btnLogout.getScene().getWindow().hide();
 
                 Parent root = FXMLLoader.load(getClass().getResource("/View/Login.fxml"));
 
                 Scene scene = new Scene(root);
-
+                stage.setTitle("My Task : Login");
                 stage.setScene(scene);
                 stage.show();
             }
-
         } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -483,22 +399,9 @@ public class DashboardController extends AppConstruct implements Initializable, 
         try {
 
             if ("PREMIUM".equals(User.getStatus())){
-                alert = new Alert(Alert.AlertType.INFORMATION, "Anda sudah PREMIUM");
-                alert.setTitle("My Task : INFORMATION");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : INFORMATION");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.INFORMATION, "Akun anda sudah PREMIUM");
             } else {
-                alert = new Alert(Alert.AlertType.CONFIRMATION, "Jadi update sebagai user PREMIUM?");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : Confirmation");
-                Optional<ButtonType> option = alert.showAndWait();
-                
-                if (option.get().equals(ButtonType.OK)) {
+                if (showConfirmationAlert("Akun anda ingin beralih menjadi user PREMIUM?")) {
                     String checkData = "SELECT * FROM user WHERE username = '" + User.getUsername() + "'";
                     st = conn.createStatement();
                     rs = st.executeQuery(checkData);
@@ -507,12 +410,7 @@ public class DashboardController extends AppConstruct implements Initializable, 
                         pr = conn.prepareStatement(updateData);
                         pr.executeUpdate();
                         
-                        alert = new Alert(Alert.AlertType.INFORMATION, "Berhasil diupdate, silahkan Login kembali");
-                        alert.setHeaderText(null);
-                        stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                        stage.setTitle("My Task : Success");
-                        Optional<ButtonType> btnOk = alert.showAndWait();
+                        showAlert(Alert.AlertType.INFORMATION, "Akun anda berhasil diupdate, silahkan Login kembali");
                         
                         Parent root = FXMLLoader.load(getClass().getResource("/View/Login.fxml"));
                         Stage stage = new Stage();
@@ -524,15 +422,11 @@ public class DashboardController extends AppConstruct implements Initializable, 
                         hasilNama.getScene().getWindow().hide();
                     }
                 } else {
-                    alert = new Alert(Alert.AlertType.INFORMATION, "Oke ga jadi update");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    stage.setTitle("My Task : INFORMATION");
-                    alert.showAndWait();
+                    showAlert(Alert.AlertType.INFORMATION, "Akun anda tidak jadi beralih ke user PREMIUM");
                 }
             }
         } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, e.getMessage());
             e.printStackTrace();
         }
     }
@@ -545,21 +439,9 @@ public class DashboardController extends AppConstruct implements Initializable, 
         try {
 
             if (TaskID == 0) {
-                alert = new Alert(Alert.AlertType.ERROR, "Pilih tugas dulu");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : ERROR");
-                alert.showAndWait();
+                showAlert(Alert.AlertType.ERROR, "Pilih tugas yang ingin diselesaikan terlebih dahulu");
             } else {
-                alert = new Alert(Alert.AlertType.CONFIRMATION, Task_judul.getText() + "Finish?");
-                alert.setHeaderText(null);
-                stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                stage.setTitle("My Task : Confirmation");
-                Optional<ButtonType> option = alert.showAndWait();
-
-                if (option.get().equals(ButtonType.OK)) {
+                if (showConfirmationAlert("Kamu telah menyelesaikan " + Task_judul.getText() + "?")) {
                     String checkData = "SELECT * FROM task WHERE id = " + TaskID;
 
                     st = conn.createStatement();
@@ -571,14 +453,10 @@ public class DashboardController extends AppConstruct implements Initializable, 
                         pr = conn.prepareStatement(updateData);
                         pr.executeUpdate();
 
-                        alert = new Alert(Alert.AlertType.INFORMATION, "FINISH");
-                        alert.setHeaderText(null);
-                        stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                        stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                        stage.setTitle("My Task : Success");
-                        alert.showAndWait();
+                        showAlert(Alert.AlertType.INFORMATION, Task_judul.getText() + " sudah FINISH");
                         
                         showTask();
+                        
                         Task_judul.setText("");
                         Task_desc.setText("");
                         Task_startDate.setValue(null);
@@ -587,16 +465,12 @@ public class DashboardController extends AppConstruct implements Initializable, 
 
                     }
                 } else {
-                    alert = new Alert(Alert.AlertType.INFORMATION, "Oke ga jadi finish");
-                    alert.setHeaderText(null);
-                    stage = (Stage) alert.getDialogPane().getScene().getWindow();
-                    stage.getIcons().add(new Image("/Resource/icon.jpeg"));
-                    stage.setTitle("My Task : INFORMATION");
-                    alert.showAndWait();
+                    showAlert(Alert.AlertType.INFORMATION, "Status Task tidak berubah");
                 }
             }
 
         } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, e.getMessage());
             e.printStackTrace();
         }
     }

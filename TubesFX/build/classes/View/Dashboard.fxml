@@ -48,7 +48,6 @@
                      <children>
                         <Button fx:id="btnHome" layoutX="23.0" layoutY="33.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="54.0" prefWidth="195.0" text="Home" />
                         <Button fx:id="btnTask" layoutX="23.0" layoutY="103.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="54.0" prefWidth="195.0" text="Task" />
-                        <Button fx:id="btn_Overview" layoutX="23.0" layoutY="169.0" mnemonicParsing="false" onAction="#switchForm" prefHeight="54.0" prefWidth="195.0" text="Finished" />
                         <Button fx:id="btnLogout" layoutX="23.0" layoutY="524.0" mnemonicParsing="false" onAction="#logout" prefHeight="54.0" prefWidth="195.0" text="Log Out" />
                      </children>
                   </AnchorPane>

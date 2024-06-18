@@ -5,10 +5,6 @@
  */
 package Model;
 
-/**
- *
- * @author ricky
- */
 public abstract interface maxTask {
     final static int maxTask = 10;
 }

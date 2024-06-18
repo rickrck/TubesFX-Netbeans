@@ -5,10 +5,6 @@
  */
 package Model;
 
-/**
- *
- * @author ricky
- */
 public class UserPremium extends User {
     
     public UserPremium(String nama, String username, String password, String status){

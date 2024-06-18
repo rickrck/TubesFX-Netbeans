@@ -5,11 +5,8 @@
  */
 package Model;
 
-/**
- *
- * @author ricky
- */
-public class User {
+/*** abstract */
+public abstract class User {
     
     private static String nama;
     private static String username;
@@ -23,7 +20,7 @@ public class User {
         User.status = status;
     }
     
-    public static String getNama() {
+    public static String getNama(){
         return nama;
     }
 
