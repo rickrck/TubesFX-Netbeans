@@ -1,6 +1,6 @@
 # Pre-requisite
 
-#### 1. Netbeans 8.2
+#### 1. Netbeans 8.0.2
 
 > [!warning]
 > You can't run on **Apache Netbeans**
