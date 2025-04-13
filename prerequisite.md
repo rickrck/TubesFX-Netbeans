@@ -5,7 +5,7 @@
 > [!warning]
 > You can't run on **Apache Netbeans**
 
-You need install Netbeans 8.2.
+You need install Netbeans 8.0.2.
 
 For installation you can use this link [Netbeans](https://dlc-cdn.sun.com/netbeans/8.0.2/final/bundles/netbeans-8.0.2-windows.exe).
 
